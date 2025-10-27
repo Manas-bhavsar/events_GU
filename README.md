@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LIFE @ GU - Event Gallery
+
+A simple event gallery website for your college, featuring a clean homepage that displays events loaded directly from a JSON file.
+
+## Features
+
+### Public Homepage
+- **Modern Design**: Clean, minimalist design matching the provided mockup
+- **Event Cards**: Beautiful event cards with hero posters and color patterns
+- **Responsive Layout**: Works perfectly on desktop and mobile devices
+- **Color Variables**: All colors and styles are defined as CSS variables for easy customization
+- **JSON Data**: Events loaded directly from JSON file for simple management
+
+## Project Structure
+
+```
+├── app/
+│   ├── globals.css           # Global styles with CSS variables
+│   ├── layout.tsx            # Root layout
+│   └── page.tsx              # Public homepage
+├── components/
+│   └── EventCard.tsx         # Event card component
+├── data/
+│   └── events.json           # Events data storage
+├── services/
+│   └── EventService.ts       # Data service layer
+└── types/
+    └── events.ts             # TypeScript interfaces
+```
 
 ## Getting Started
 
-First, run the development server:
+1. **Install Dependencies**
+   ```bash
+   npm install
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+2. **Run Development Server**
+   ```bash
+   npm run dev
+   ```
+
+3. **Access the Application**
+   - Homepage: `http://localhost:3000` (or 3001 if 3000 is in use)
+
+## Sample Data
+
+The application comes with 3 sample events:
+- Annual Cultural Festival
+- Tech Innovation Summit  
+- Sports Championship Finals
+
+Each event includes sample images with descriptive filenames.
+
+## Managing Events
+
+To add, edit, or remove events, simply edit the `data/events.json` file:
+
+```json
+{
+  "events": [
+    {
+      "id": "event-1",
+      "title": "Event Title",
+      "description": "Event description",
+      "date": "2024-03-15",
+      "location": "Event Location",
+      "category": "Event Category",
+      "heroPoster": "hero-image.jpg",
+      "images": [
+        {
+          "id": "img-1-1",
+          "filename": "image.jpg",
+          "alt": "Image description",
+          "isHero": true,
+          "uploadedAt": "2024-03-10T10:00:00Z"
+        }
+      ],
+      "createdAt": "2024-03-10T09:00:00Z",
+      "updatedAt": "2024-03-10T09:00:00Z"
+    }
+  ]
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Customization
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Colors and Styles
+All colors are defined as CSS variables in `app/globals.css`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```css
+:root {
+  --header-bg: #2a2a2a;
+  --title-bg: #f5f5f5;
+  --content-bg: #1a1a1a;
+  --accent-orange: #ff6b35;
+  --accent-yellow: #ffd23f;
+  /* ... more variables */
+}
+```
 
-## Learn More
+### Adding New Event Categories
+Edit the category options in the JSON file or update the EventCard component to handle new categories.
 
-To learn more about Next.js, take a look at the following resources:
+## Technologies Used
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Next.js 16**: React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first CSS framework
+- **React 19**: Latest React features
+- **Node.js**: Server-side functionality

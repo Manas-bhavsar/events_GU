@@ -1,0 +1,175 @@
+{
+  "events": [
+    {
+      "id": "event-1",
+      "title": "Event 1",
+      "description": "A vibrant celebration of our diverse cultural heritage featuring music, dance, food, and art from different communities.",
+      "date": "2024-03-15",
+      "category": "Cultural",
+      "heroPoster": "cultural-dance-performance.jpg",
+      "images": [
+        {
+          "id": "img-1-2",
+          "filename": "cultural-dance-performance.jpg",
+          "alt": "Traditional dance performance",
+          "isHero": false,
+          "uploadedAt": "2024-03-10T10:15:00Z"
+        },
+        {
+          "id": "img-1-3",
+          "filename": "cultural-food-stall.jpg",
+          "alt": "Food stalls at cultural festival",
+          "isHero": false,
+          "uploadedAt": "2024-03-10T10:30:00Z"
+        },
+        {
+          "filename": "events_design-1761545213537-xryojs.png",
+          "alt": "",
+          "isHero": false,
+          "uploadedAt": "2025-10-27T06:06:53.537Z",
+          "id": "img-1761545213538-e3z0wuvav"
+        }
+      ],
+      "createdAt": "2024-03-10T09:00:00Z",
+      "updatedAt": "2025-10-27T06:21:28.972Z",
+      "location": "",
+      "visible": true
+    },
+    {
+      "id": "event-2",
+      "title": "Event 2",
+      "description": "Exploring the latest trends in technology, featuring keynote speakers, workshops, and networking opportunities.",
+      "date": "2024-02-28",
+      "category": "Technology",
+      "heroPoster": "tech-summit-hero.jpg",
+      "images": [
+        {
+          "id": "img-2-1",
+          "filename": "tech-summit-hero.jpg",
+          "alt": "Tech summit main stage",
+          "isHero": true,
+          "uploadedAt": "2024-02-25T14:00:00Z"
+        },
+        {
+          "id": "img-2-2",
+          "filename": "tech-workshop-session.jpg",
+          "alt": "Interactive workshop session",
+          "isHero": false,
+          "uploadedAt": "2024-02-25T14:15:00Z"
+        },
+        {
+          "id": "img-2-3",
+          "filename": "tech-networking-event.jpg",
+          "alt": "Networking session at tech summit",
+          "isHero": false,
+          "uploadedAt": "2024-02-25T14:30:00Z"
+        }
+      ],
+      "createdAt": "2024-02-25T13:00:00Z",
+      "updatedAt": "2025-10-27T06:07:45.627Z",
+      "visible": true
+    },
+    {
+      "id": "event-3",
+      "title": "Event 3",
+      "description": "The grand finale of our annual sports championship featuring basketball, football, and volleyball competitions.",
+      "date": "2024-04-20",
+      "category": "Sports",
+      "heroPoster": "sports-championship-hero.jpg",
+      "images": [
+        {
+          "id": "img-3-1",
+          "filename": "sports-championship-hero.jpg",
+          "alt": "Sports championship trophy ceremony",
+          "isHero": true,
+          "uploadedAt": "2024-04-18T16:00:00Z"
+        },
+        {
+          "id": "img-3-2",
+          "filename": "basketball-final-game.jpg",
+          "alt": "Basketball final match",
+          "isHero": false,
+          "uploadedAt": "2024-04-18T16:15:00Z"
+        },
+        {
+          "id": "img-3-3",
+          "filename": "football-championship.jpg",
+          "alt": "Football championship match",
+          "isHero": false,
+          "uploadedAt": "2024-04-18T16:30:00Z"
+        }
+      ],
+      "createdAt": "2024-04-18T15:00:00Z",
+      "updatedAt": "2025-10-27T06:07:46.358Z",
+      "visible": true
+    },
+    {
+      "id": "event-4",
+      "title": "Event 4",
+      "description": "The grand finale of our annual sports championship featuring basketball, football, and volleyball competitions.",
+      "date": "2024-04-20",
+      "category": "Sports",
+      "heroPoster": "sports-championship-hero.jpg",
+      "images": [
+        {
+          "id": "img-3-1",
+          "filename": "sports-championship-hero.jpg",
+          "alt": "Sports championship trophy ceremony",
+          "isHero": true,
+          "uploadedAt": "2024-04-18T16:00:00Z"
+        },
+        {
+          "id": "img-3-2",
+          "filename": "basketball-final-game.jpg",
+          "alt": "Basketball final match",
+          "isHero": false,
+          "uploadedAt": "2024-04-18T16:15:00Z"
+        },
+        {
+          "id": "img-3-3",
+          "filename": "football-championship.jpg",
+          "alt": "Football championship match",
+          "isHero": false,
+          "uploadedAt": "2024-04-18T16:30:00Z"
+        }
+      ],
+      "createdAt": "2024-04-18T15:00:00Z",
+      "updatedAt": "2025-10-27T06:07:47.352Z",
+      "visible": true
+    },
+    {
+      "id": "event-5",
+      "title": "Event 5",
+      "description": "The grand finale of our annual sports championship featuring basketball, football, and volleyball competitions.",
+      "date": "2024-04-20",
+      "category": "Sports",
+      "heroPoster": "sports-championship-hero.jpg",
+      "images": [
+        {
+          "id": "img-3-1",
+          "filename": "sports-championship-hero.jpg",
+          "alt": "Sports championship trophy ceremony",
+          "isHero": true,
+          "uploadedAt": "2024-04-18T16:00:00Z"
+        },
+        {
+          "id": "img-3-2",
+          "filename": "basketball-final-game.jpg",
+          "alt": "Basketball final match",
+          "isHero": false,
+          "uploadedAt": "2024-04-18T16:15:00Z"
+        },
+        {
+          "id": "img-3-3",
+          "filename": "football-championship.jpg",
+          "alt": "Football championship match",
+          "isHero": false,
+          "uploadedAt": "2024-04-18T16:30:00Z"
+        }
+      ],
+      "createdAt": "2024-04-18T15:00:00Z",
+      "updatedAt": "2025-10-27T06:07:47.950Z",
+      "visible": true
+    }
+  ]
+}
