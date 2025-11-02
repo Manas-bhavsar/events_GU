@@ -28,7 +28,7 @@ export async function saveEventImage(
   const dest = path.join(PUBLIC_IMAGES_DIR, filename);
   fs.writeFileSync(dest, fileBuffer);
 
-  const newImage = EventService.addImageToEvent(eventId, {
+  const newImage = await EventService.addImageToEvent(eventId, {
     filename,
     alt: options?.alt ?? '',
     isHero: Boolean(options?.isHero),
@@ -38,14 +38,14 @@ export async function saveEventImage(
   return newImage;
 }
 
-export function deleteEventImage(eventId: string, imageId: string): boolean {
-  const event = EventService.getEventById(eventId);
+export async function deleteEventImage(eventId: string, imageId: string): Promise<boolean> {
+  const event = await EventService.getEventById(eventId);
   if (!event) return false;
   const img = event.images.find(i => i.id === imageId);
   if (!img) return false;
 
   const filePath = path.join(PUBLIC_IMAGES_DIR, img.filename);
-  const ok = EventService.deleteImage(eventId, imageId);
+  const ok = await EventService.deleteImage(eventId, imageId);
   if (ok && fs.existsSync(filePath)) {
     try { fs.unlinkSync(filePath); } catch {}
   }

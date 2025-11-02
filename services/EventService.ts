@@ -1,172 +1,180 @@
 import { Event, EventImage, EventFormData } from '../types/events';
-import fs from 'fs';
-import path from 'path';
+import { prisma } from '@/lib/prisma';
 
-const DATA_FILE_PATH = path.join(process.cwd(), 'data', 'events.json');
+function mapEvent(e: any): Event {
+  return {
+    id: e.id,
+    title: e.title,
+    description: e.description,
+    date: (e.date instanceof Date ? e.date.toISOString() : e.date),
+    category: e.category,
+    heroPoster: e.heroPoster || '',
+    images: (e.images || []).map((img: any) => ({
+      id: img.id,
+      filename: img.filename,
+      alt: img.alt,
+      isHero: Boolean(img.isHero),
+      uploadedAt: (img.uploadedAt instanceof Date ? img.uploadedAt.toISOString() : img.uploadedAt),
+    })),
+    createdAt: (e.createdAt instanceof Date ? e.createdAt.toISOString() : e.createdAt),
+    updatedAt: (e.updatedAt instanceof Date ? e.updatedAt.toISOString() : e.updatedAt),
+    visible: typeof e.visible === 'boolean' ? e.visible : undefined,
+  };
+}
 
 export class EventService {
-  private static readData(): { events: Event[] } {
-    try {
-      const data = fs.readFileSync(DATA_FILE_PATH, 'utf8');
-      return JSON.parse(data);
-    } catch (error) {
-      console.error('Error reading events data:', error);
-      return { events: [] };
-    }
+  static async getAllEvents(): Promise<Event[]> {
+    const list = await prisma.event.findMany({
+      // Homepage and admin list don't need images; fetch lean rows
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        date: true,
+        category: true,
+        heroPoster: true,
+        createdAt: true,
+        updatedAt: true,
+        visible: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+    return list.map(mapEvent);
   }
 
-  private static writeData(data: { events: Event[] }): void {
-    try {
-      fs.writeFileSync(DATA_FILE_PATH, JSON.stringify(data, null, 2));
-    } catch (error) {
-      console.error('Error writing events data:', error);
-      throw new Error('Failed to save data');
-    }
+  static async getVisibleEvents(): Promise<Event[]> {
+    const list = await prisma.event.findMany({
+      where: { visible: true },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        date: true,
+        category: true,
+        heroPoster: true,
+        createdAt: true,
+        updatedAt: true,
+        visible: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+    return list.map(mapEvent);
   }
 
-  static getAllEvents(): Event[] {
-    const data = this.readData();
-    return data.events;
+  static async getEventById(id: string): Promise<Event | null> {
+    const e = await prisma.event.findUnique({ where: { id }, include: { images: true } });
+    return e ? mapEvent(e) : null;
   }
 
-  static getEventById(id: string): Event | null {
-    const events = this.getAllEvents();
-    return events.find(event => event.id === id) || null;
+  static async createEvent(eventData: EventFormData): Promise<Event> {
+    const id = `event-${Date.now()}`;
+    const created = await prisma.event.create({
+      data: {
+        id,
+        title: eventData.title,
+        description: eventData.description,
+        date: new Date(eventData.date),
+        category: eventData.category,
+        heroPoster: '',
+      },
+      include: { images: true },
+    });
+    return mapEvent(created);
   }
 
-  static createEvent(eventData: EventFormData): Event {
-    const events = this.getAllEvents();
-    const newEvent: Event = {
-      id: `event-${Date.now()}`,
-      ...eventData,
-      heroPoster: '',
-      images: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    events.push(newEvent);
-    this.writeData({ events });
-    return newEvent;
+  static async updateEvent(id: string, eventData: Partial<EventFormData>): Promise<Event | null> {
+    const exists = await prisma.event.findUnique({ where: { id } });
+    if (!exists) return null;
+    const updated = await prisma.event.update({
+      where: { id },
+      data: {
+        ...(eventData.title !== undefined ? { title: eventData.title } : {}),
+        ...(eventData.description !== undefined ? { description: eventData.description } : {}),
+        ...(eventData.date !== undefined ? { date: new Date(eventData.date) } : {}),
+        ...(eventData.category !== undefined ? { category: eventData.category } : {}),
+      },
+      include: { images: true },
+    });
+    return mapEvent(updated);
   }
 
-  static updateEvent(id: string, eventData: Partial<EventFormData>): Event | null {
-    const events = this.getAllEvents();
-    const eventIndex = events.findIndex(event => event.id === id);
-    
-    if (eventIndex === -1) return null;
-    
-    events[eventIndex] = {
-      ...events[eventIndex],
-      ...eventData,
-      updatedAt: new Date().toISOString()
-    };
-    
-    this.writeData({ events });
-    return events[eventIndex];
-  }
-
-  static deleteEvent(id: string): boolean {
-    const events = this.getAllEvents();
-    const filteredEvents = events.filter(event => event.id !== id);
-    
-    if (filteredEvents.length === events.length) return false;
-    
-    this.writeData({ events: filteredEvents });
+  static async deleteEvent(id: string): Promise<boolean> {
+    const exists = await prisma.event.findUnique({ where: { id } });
+    if (!exists) return false;
+    await prisma.event.delete({ where: { id } });
     return true;
   }
 
-  static addImageToEvent(eventId: string, image: Omit<EventImage, 'id'>): EventImage | null {
-    const events = this.getAllEvents();
-    const eventIndex = events.findIndex(event => event.id === eventId);
-    
-    if (eventIndex === -1) return null;
-    
-    const newImage: EventImage = {
-      ...image,
-      id: `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    };
-    
-    events[eventIndex].images.push(newImage);
-    
-    // If this is the first image or marked as hero, set it as hero poster
-    if (image.isHero || events[eventIndex].images.length === 1) {
-      events[eventIndex].heroPoster = newImage.filename;
+  static async addImageToEvent(eventId: string, image: Omit<EventImage, 'id'>): Promise<EventImage | null> {
+    const event = await prisma.event.findUnique({ where: { id: eventId }, include: { images: true } });
+    if (!event) return null;
+    const newId = `img-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const created = await prisma.eventImage.create({
+      data: {
+        id: newId,
+        filename: image.filename,
+        alt: image.alt,
+        isHero: Boolean(image.isHero),
+        uploadedAt: image.uploadedAt ? new Date(image.uploadedAt) : undefined,
+        event: { connect: { id: eventId } },
+      },
+    });
+    // Set heroPoster if first image or isHero marked
+    if (image.isHero || (event.images.length === 0)) {
+      await prisma.event.update({ where: { id: eventId }, data: { heroPoster: created.filename } });
     }
-    
-    events[eventIndex].updatedAt = new Date().toISOString();
-    this.writeData({ events });
-    return newImage;
+    return {
+      id: created.id,
+      filename: created.filename,
+      alt: created.alt,
+      isHero: created.isHero,
+      uploadedAt: (created.uploadedAt as Date).toISOString(),
+    };
   }
 
-  static updateImage(eventId: string, imageId: string, updates: Partial<EventImage>): EventImage | null {
-    const events = this.getAllEvents();
-    const eventIndex = events.findIndex(event => event.id === eventId);
-    
-    if (eventIndex === -1) return null;
-    
-    const imageIndex = events[eventIndex].images.findIndex(img => img.id === imageId);
-    if (imageIndex === -1) return null;
-    
-    events[eventIndex].images[imageIndex] = {
-      ...events[eventIndex].images[imageIndex],
-      ...updates
-    };
-    
-    // If this image is marked as hero, update the hero poster
+  static async updateImage(eventId: string, imageId: string, updates: Partial<EventImage>): Promise<EventImage | null> {
+    const exists = await prisma.eventImage.findUnique({ where: { id: imageId } });
+    if (!exists) return null;
+    const updated = await prisma.eventImage.update({
+      where: { id: imageId },
+      data: {
+        ...(updates.filename !== undefined ? { filename: updates.filename } : {}),
+        ...(updates.alt !== undefined ? { alt: updates.alt } : {}),
+        ...(updates.isHero !== undefined ? { isHero: updates.isHero } : {}),
+        ...(updates.uploadedAt !== undefined ? { uploadedAt: new Date(updates.uploadedAt) } : {}),
+      },
+    });
     if (updates.isHero) {
-      events[eventIndex].heroPoster = events[eventIndex].images[imageIndex].filename;
+      await prisma.event.update({ where: { id: eventId }, data: { heroPoster: updated.filename } });
     }
-    
-    events[eventIndex].updatedAt = new Date().toISOString();
-    this.writeData({ events });
-    return events[eventIndex].images[imageIndex];
+    return {
+      id: updated.id,
+      filename: updated.filename,
+      alt: updated.alt,
+      isHero: updated.isHero,
+      uploadedAt: (updated.uploadedAt as Date).toISOString(),
+    };
   }
 
-  static deleteImage(eventId: string, imageId: string): boolean {
-    const events = this.getAllEvents();
-    const eventIndex = events.findIndex(event => event.id === eventId);
-    
-    if (eventIndex === -1) return false;
-    
-    const imageIndex = events[eventIndex].images.findIndex(img => img.id === imageId);
-    if (imageIndex === -1) return false;
-    
-    const deletedImage = events[eventIndex].images[imageIndex];
-    events[eventIndex].images.splice(imageIndex, 1);
-    
-    // If the deleted image was the hero poster, set a new one
-    if (events[eventIndex].heroPoster === deletedImage.filename) {
-      if (events[eventIndex].images.length > 0) {
-        events[eventIndex].heroPoster = events[eventIndex].images[0].filename;
-      } else {
-        events[eventIndex].heroPoster = '';
-      }
+  static async deleteImage(eventId: string, imageId: string): Promise<boolean> {
+    const img = await prisma.eventImage.findUnique({ where: { id: imageId } });
+    if (!img) return false;
+    await prisma.eventImage.delete({ where: { id: imageId } });
+    // If deleted was heroPoster, set a new one
+    const remaining = await prisma.eventImage.findMany({ where: { eventId } });
+    const newHero = remaining[0]?.filename || '';
+    if ((await prisma.event.findUnique({ where: { id: eventId } }))?.heroPoster === img.filename) {
+      await prisma.event.update({ where: { id: eventId }, data: { heroPoster: newHero } });
     }
-    
-    events[eventIndex].updatedAt = new Date().toISOString();
-    this.writeData({ events });
     return true;
   }
 
-  static setHeroPoster(eventId: string, imageId: string): boolean {
-    const events = this.getAllEvents();
-    const eventIndex = events.findIndex(event => event.id === eventId);
-    
-    if (eventIndex === -1) return false;
-    
-    const image = events[eventIndex].images.find(img => img.id === imageId);
-    if (!image) return false;
-    
-    // Reset all images' isHero flag
-    events[eventIndex].images.forEach(img => img.isHero = false);
-    
-    // Set the selected image as hero
-    image.isHero = true;
-    events[eventIndex].heroPoster = image.filename;
-    events[eventIndex].updatedAt = new Date().toISOString();
-    
-    this.writeData({ events });
+  static async setHeroPoster(eventId: string, imageId: string): Promise<boolean> {
+    const img = await prisma.eventImage.findUnique({ where: { id: imageId } });
+    if (!img) return false;
+    await prisma.eventImage.updateMany({ where: { eventId }, data: { isHero: false } });
+    await prisma.eventImage.update({ where: { id: imageId }, data: { isHero: true } });
+    await prisma.event.update({ where: { id: eventId }, data: { heroPoster: img.filename } });
     return true;
   }
 }

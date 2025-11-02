@@ -1,0 +1,42 @@
+// Prisma schema for Events Image Gallery
+// Images are served from the public folder; database stores only filenames
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:manas123@localhost:5432/gu-events?schema=public"
+}
+
+model Event {
+  id          String   @id
+  title       String
+  description String
+  date        DateTime
+  category    String
+  heroPoster  String   @default("") // filename of hero image (from public or public/images)
+  location    String? // optional in JSON
+  visible     Boolean? // optional in JSON
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  images EventImage[]
+
+  @@index([visible, createdAt])
+  @@index([date])
+}
+
+model EventImage {
+  id         String   @id // Keep string IDs to match JSON (e.g., "img-...")
+  filename   String // only the file name; files live under public or public/images
+  alt        String // alt text
+  isHero     Boolean  @default(false)
+  uploadedAt DateTime @default(now())
+
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId String
+
+  @@index([eventId])
+}

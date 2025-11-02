@@ -1,79 +1,53 @@
-import fs from 'fs';
-import path from 'path';
 import { Event, EventFormData } from '../types/events';
 import { EventService } from './EventService';
+import { prisma } from '@/lib/prisma';
 
-const DATA_FILE_PATH = path.join(process.cwd(), 'data', 'events.json');
-
-function readData(): { events: Event[] } {
-  try {
-    const raw = fs.readFileSync(DATA_FILE_PATH, 'utf8');
-    return JSON.parse(raw);
-  } catch (err) {
-    return { events: [] };
-  }
-}
-
-function writeData(data: { events: Event[] }): void {
-  fs.writeFileSync(DATA_FILE_PATH, JSON.stringify(data, null, 2));
-}
-
-export function createEventAdmin(
+export async function createEventAdmin(
   eventData: EventFormData,
   options?: { visible?: boolean }
-): Event {
-  const created = EventService.createEvent(eventData);
+): Promise<Event> {
+  const created = await EventService.createEvent(eventData);
 
-  // Apply visibility if provided
   if (typeof options?.visible === 'boolean') {
-    const data = readData();
-    const idx = data.events.findIndex(e => e.id === created.id);
-    if (idx !== -1) {
-      data.events[idx].visible = options.visible;
-      data.events[idx].updatedAt = new Date().toISOString();
-      writeData({ events: data.events });
-      return data.events[idx];
-    }
+    await prisma.event.update({
+      where: { id: created.id },
+      data: { visible: options.visible },
+    });
+    const fresh = await EventService.getEventById(created.id);
+    return fresh as Event;
   }
 
   return created;
 }
 
-export function updateEventAdmin(
+export async function updateEventAdmin(
   id: string,
   updates: Partial<EventFormData> & { visible?: boolean }
-): Event | null {
-  const data = readData();
-  const idx = data.events.findIndex(e => e.id === id);
-  if (idx === -1) return null;
+): Promise<Event | null> {
+  const exists = await prisma.event.findUnique({ where: { id } });
+  if (!exists) return null;
 
-  // Only assign defined fields to avoid clobbering
-  const current = data.events[idx];
-  const next: Event = {
-    ...current,
-    ...(updates.title !== undefined ? { title: updates.title } : {}),
-    ...(updates.description !== undefined ? { description: updates.description } : {}),
-    ...(updates.date !== undefined ? { date: updates.date } : {}),
-    ...(updates.category !== undefined ? { category: updates.category } : {}),
-    ...(typeof updates.visible === 'boolean' ? { visible: updates.visible } : {}),
-    updatedAt: new Date().toISOString(),
-  };
+  await prisma.event.update({
+    where: { id },
+    data: {
+      ...(updates.title !== undefined ? { title: updates.title } : {}),
+      ...(updates.description !== undefined ? { description: updates.description } : {}),
+      ...(updates.date !== undefined ? { date: new Date(updates.date) } : {}),
+      ...(updates.category !== undefined ? { category: updates.category } : {}),
+      ...(typeof updates.visible === 'boolean' ? { visible: updates.visible } : {}),
+    },
+  });
 
-  data.events[idx] = next;
-  writeData({ events: data.events });
-  return next;
+  return await EventService.getEventById(id);
 }
 
-export function deleteEventAdmin(id: string): boolean {
-  return EventService.deleteEvent(id);
+export async function deleteEventAdmin(id: string): Promise<boolean> {
+  return await EventService.deleteEvent(id);
 }
 
-export function setEventVisibility(id: string, visible: boolean): boolean {
-  const data = readData();
-  const idx = data.events.findIndex(e => e.id === id);
-  if (idx === -1) return false;
-  data.events[idx].visible = visible;
-  data.events[idx].updatedAt = new Date().toISOString();
-  writeData({ events: data.events });
+export async function setEventVisibility(id: string, visible: boolean): Promise<boolean> {
+  const exists = await prisma.event.findUnique({ where: { id } });
+  if (!exists) return false;
+  await prisma.event.update({ where: { id }, data: { visible } });
   return true;
 }

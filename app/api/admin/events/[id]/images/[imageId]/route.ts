@@ -11,7 +11,7 @@ export async function DELETE(
 ) {
   try {
     const { id, imageId } = await params;
-    const ok = deleteEventImage(id, imageId);
+    const ok = await deleteEventImage(id, imageId);
     if (!ok) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json({ success: true });
   } catch (e) {

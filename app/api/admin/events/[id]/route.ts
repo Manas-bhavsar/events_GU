@@ -12,7 +12,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const event = EventService.getEventById(id);
+    const event = await EventService.getEventById(id);
     if (!event) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json(event);
   } catch (e) {
@@ -29,13 +29,13 @@ export async function PUT(
     const { title, description, date, category, visible } = body || {};
     const { id } = await params;
     // Try atomic admin update first
-    let updated = updateEventAdmin(id, { title, description, date, category, visible });
+    let updated = await updateEventAdmin(id, { title, description, date, category, visible });
     // Fallback to core update + visibility set
     if (!updated) {
-      const updatedCore = EventService.updateEvent(id, { title, description, date, category });
-      if (updatedCore && typeof visible === 'boolean') setEventVisibility(id, visible);
+      const updatedCore = await EventService.updateEvent(id, { title, description, date, category });
+      if (updatedCore && typeof visible === 'boolean') await setEventVisibility(id, visible);
     }
-    const fresh = EventService.getEventById(id);
+    const fresh = await EventService.getEventById(id);
     if (!fresh) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json(fresh);
   } catch (e) {
@@ -53,21 +53,21 @@ export async function PATCH(
     const { id } = await params;
 
     // Try atomic admin update first
-    let updated = updateEventAdmin(id, { title, description, date, category, visible });
+    let updated = await updateEventAdmin(id, { title, description, date, category, visible });
 
     // If only visible provided and admin failed, set visibility directly
     if (!updated && typeof visible === 'boolean' && !title && !description && !date && !category) {
-      const ok = setEventVisibility(id, visible);
+      const ok = await setEventVisibility(id, visible);
       if (!ok) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
     // Fallback to core update for provided fields
     if (!updated && (title !== undefined || description !== undefined || date !== undefined || category !== undefined)) {
-      const updatedCore = EventService.updateEvent(id, { title, description, date, category });
-      if (updatedCore && typeof visible === 'boolean') setEventVisibility(id, visible);
+      const updatedCore = await EventService.updateEvent(id, { title, description, date, category });
+      if (updatedCore && typeof visible === 'boolean') await setEventVisibility(id, visible);
     }
 
-    const fresh = EventService.getEventById(id);
+    const fresh = await EventService.getEventById(id);
     if (!fresh) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json(fresh);
   } catch (e) {
@@ -81,7 +81,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const ok = deleteEventAdmin(id);
+    const ok = await deleteEventAdmin(id);
     if (!ok) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json({ success: true });
   } catch (e) {

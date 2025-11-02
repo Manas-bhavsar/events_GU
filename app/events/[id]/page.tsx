@@ -6,13 +6,13 @@ import path from 'path';
 import EventSlider from '../../../components/EventSlider';
 
 export async function generateStaticParams() {
-  const events = EventService.getAllEvents();
+  const events = await EventService.getAllEvents();
   return events.map((e) => ({ id: e.id }));
 }
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const event = EventService.getEventById(id);
+  const event = await EventService.getEventById(id);
   if (!event || event.visible !== true) return notFound();
 
   const poster = (event.heroPoster || '').replace(/^[@\s]+/, '');
