@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://postgres:manas123@localhost:5432/gu-events?schema=public"
+  url      = "postgresql://postgres:12345@postgre@localhost:5432/events_GU?schema=public"
 }
 
 model Event {
